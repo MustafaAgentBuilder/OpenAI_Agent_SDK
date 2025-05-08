@@ -1,0 +1,14 @@
+[project]
+name = "agent-with-web-browser"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "browser-use>=0.1.41",
+    "langchain-community>=0.3.20",
+    "langchain-openai>=0.3.11",
+    "openai>=1.76.2",
+    "patchright>=1.51.3",
+    "playwright>=1.51.0",
+]

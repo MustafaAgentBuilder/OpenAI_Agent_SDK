@@ -1,0 +1,6 @@
+.files
+.venv
+.env
+.python-version
+uv.lock
+.chainlit
