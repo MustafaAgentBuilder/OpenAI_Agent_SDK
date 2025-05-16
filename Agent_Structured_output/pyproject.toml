@@ -1,0 +1,10 @@
+[project]
+name = "agent-structured-output"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "openai-agents>=0.0.15",
+    "pydantic>=2.11.4",
+]
