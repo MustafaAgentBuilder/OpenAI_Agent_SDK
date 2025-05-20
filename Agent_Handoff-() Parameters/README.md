@@ -182,7 +182,7 @@ resolver_agent = Agent(
 )
 ```
 
-Now you have a complete, documented example showing every `handoff()` parameter in action. Copy this `.md` directly into your GitHub README or docs site!
+Now you have a complete, documented example showing every `handoff()` parameter in action.
 
 ### Including Handoff Info in Prompts
 
