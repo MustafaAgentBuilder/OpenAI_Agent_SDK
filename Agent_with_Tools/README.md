@@ -1,278 +1,315 @@
-# OpenAI Agents SDK: `tool_use_behavior` and `reset_tool_choice` Explained
+# OpenAI Agents SDK: Tool Settings Explained
 
-This document explains the `tool_use_behavior` and `reset_tool_choice` settings in the OpenAI Agents SDK in a beginner-friendly way, with real-world code examples to demonstrate how they work.
+This document explains the key tool-related settings in the OpenAI Agents SDK: `tool_use_behavior`, `reset_tool_choice`, `tool_choice`, `parallel_tool_calls`, and `truncation`. These settings control how agents interact with tools and process inputs/outputs. The explanations are beginner-friendly, with real-world code examples to demonstrate how each setting works in a practical scenario.
 
-## What is `tool_use_behavior`?
+## Overview
 
-`tool_use_behavior` is a setting that controls what happens after an agent uses a tool (like a function or API). It decides how the tool's result is handled and how the agent's workflow proceeds. There are four possible options:
+The OpenAI Agents SDK allows developers to create AI agents that use large language models (LLMs) and tools (like functions or APIs) to perform tasks. The settings discussed here help customize how agents select and use tools, handle tool outputs, and manage input/output lengths. We’ll use a **store agent** scenario, where an agent answers customer queries about products (e.g., price, stock, reviews), to illustrate each setting.
 
-1. **"run_llm_again" (Default Option)**:
-   - When the agent uses a tool, the tool's result is sent to the LLM (language model).
-   - The LLM reviews the result and generates a new response.
-   - Use this when you want the LLM to further process or enhance the tool's output.
-   - **Example**: If you use a calculator tool to compute 2+2, the result (4) goes to the LLM, which might add something like, "The answer to 2 plus 2 is 4."
+## Settings Explained
 
-2. **"stop_on_first_tool"**:
-   - When the agent uses the first tool, its result becomes the final output.
-   - The LLM does not process the result further, so the workflow stops.
-   - Use this when you only need the tool's result without additional LLM processing.
-   - **Example**: If you use a weather tool to check "Karachi's weather," the tool's output (e.g., "30°C, sunny") is the final answer.
+### 1. `tool_use_behavior`
+`tool_use_behavior` controls what happens after an agent uses a tool. It determines whether the tool’s result becomes the final output or is sent to the LLM for further processing. There are four options:
 
-3. **List of Tool Names**:
-   - You can provide a list of specific tool names.
-   - If the agent uses any tool from this list, its result becomes the final output, and the workflow stops.
-   - The LLM does not process the result further.
-   - **Example**: If you specify "weather_tool" or "math_tool" in the list, the agent stops after using these tools, and their output is the final answer.
+- **"run_llm_again" (Default)**:
+  - The tool’s result is sent to the LLM, which processes it and generates a new response.
+  - **Use Case**: When you want the LLM to enhance the tool’s output (e.g., adding an explanation).
+  - **Example**: A calculator tool computes 2+2=4, and the LLM adds, “The answer to 2 plus 2 is 4.”
 
-4. **Function**:
-   - You can provide a custom function to handle the tool's results.
-   - This function takes the run context and tool results as input and returns a `ToolToFinalOutputResult`, which decides if the tool's result is the final output.
-   - Use this when you need precise control over what happens after a tool is used.
-   - **Example**: You can create a function that checks if a tool's result is valid and decides whether to stop or continue the workflow.
+- **"stop_on_first_tool"**:
+  - The first tool’s result becomes the final output, and the workflow stops (no further LLM processing).
+  - **Use Case**: When you only need the tool’s raw output.
+  - **Example**: A weather tool returns “30°C, sunny” for Karachi, and that’s the final answer.
 
-**Note**: These settings only apply to **FunctionTools**. Hosted tools (like file search or web search) are always processed by the LLM, so these settings do not affect them.
+- **List of Tool Names**:
+  - If the agent uses a tool from the specified list, its result becomes the final output, and the workflow stops.
+  - **Use Case**: When you want specific tools to produce final outputs without LLM processing.
+  - **Example**: If “math_tool” is in the list, its result (e.g., 20) is the final output.
 
-## What is `reset_tool_choice`?
+- **Function**:
+  - A custom function handles the tool’s results, deciding whether they are the final output.
+  - **Use Case**: When you need custom logic to process tool results.
+  - **Example**: A function checks if a stock price is above $50 and sets it as the final output if true.
 
-`reset_tool_choice` is a boolean setting (True or False) that determines whether the agent's tool choice is reset to its default value after a tool is used.
+**Note**: This setting only applies to **FunctionTools**. Hosted tools (e.g., file search, web search) are always processed by the LLM.
+
+### 2. `reset_tool_choice`
+`reset_tool_choice` is a boolean setting (`True` or `False`) that determines whether the agent resets its tool choice to the default after using a tool.
 
 - **Default Value**: `True`
-- **Meaning**: When `True`, the agent resets its tool choice after using a tool. This prevents the agent from repeatedly using the same tool and getting stuck in an infinite loop.
-- **If False**: The agent keeps the same tool choice it used previously, which might cause it to loop on the same tool.
-- **Example**: If an agent uses a calculator tool and `reset_tool_choice=False`, it might keep using the calculator repeatedly. If `True`, it can switch to other tools or instructions.
+- **Behavior**:
+  - If `True`, the agent resets its tool choice after each use, preventing it from repeatedly using the same tool (avoids infinite loops).
+  - If `False`, the agent retains the previous tool choice, which may cause it to reuse the same tool incorrectly.
+- **Example**: If an agent uses a calculator tool and `reset_tool_choice=False`, it might keep using the calculator for unrelated queries. If `True`, it can switch to other tools or instructions.
 
-## Code Examples
+### 3. `tool_choice`
+`tool_choice` controls which tool the agent uses when calling the LLM. It has the following options:
 
-Below are beginner-friendly code examples that demonstrate each `tool_use_behavior` option and `reset_tool_choice` in real-world scenarios.
+- **"auto" (Default if not set)**:
+  - The LLM decides whether to use a tool and which one, based on the input.
+  - **Use Case**: When you want the agent to be flexible and choose tools contextually.
+  - **Example**: For “What’s the weather?”, the LLM picks a weather tool; for a general question, it may use no tool.
 
-### Example 1: `tool_use_behavior = "run_llm_again"`
+- **"required"**:
+  - The agent must use a tool, regardless of the input.
+  - **Use Case**: When you want to ensure a tool is always used.
+  - **Example**: For any query, the agent picks a relevant tool or errors if none fit.
 
-This example creates an agent that uses a math tool and processes its result with the LLM.
+- **"none"**:
+  - The agent does not use any tools, relying only on LLM instructions.
+  - **Use Case**: When you want direct LLM responses without tool involvement.
+  - **Example**: For “What’s the largest city?”, the agent answers without tools.
 
-```python
-from agents import Agent, Runner, FunctionTool
-import asyncio
+- **Specific Tool Name (string)**:
+  - The agent uses only the specified tool, ignoring others.
+  - **Use Case**: When you need results from one specific tool.
+  - **Example**: If set to “check_price”, only the price tool is used.
 
-# Define a simple math tool
-def add_numbers(a: int, b: int) -> int:
-    return a + b
+- **None**:
+  - Falls back to the default behavior (`auto`).
 
-# Create a FunctionTool
-math_tool = FunctionTool(add_numbers, description="Adds two numbers")
+### 4. `parallel_tool_calls`
+`parallel_tool_calls` is a boolean setting (`True` or `False`) that determines whether the agent can call multiple tools simultaneously.
 
-# Create an agent with run_llm_again behavior
-agent = Agent(
-    name="Math Agent",
-    instructions="Use the math tool to add numbers and explain the result.",
-    tools=[math_tool],
-    tool_use_behavior="run_llm_again"
-)
+- **Default Value**: `False` (if not set).
+- **Behavior**:
+  - If `True`, the agent can call multiple tools at once if the LLM deems it necessary.
+  - If `False`, tools are called sequentially (one at a time).
+- **Use Case**:
+  - `True`: For complex tasks requiring multiple tool results simultaneously (e.g., checking price and stock together).
+  - `False`: For step-by-step processing of tool results.
+- **Example**: For “Check price and stock,” `True` allows both tools to run at once, while `False` runs them one after another.
 
-# Async function to run the agent
-async def main():
-    result = await Runner.run(agent, "Add 5 and 3, then explain the result.")
-    print(result.final_output)
+### 5. `truncation`
+`truncation` controls how the LLM handles long inputs or outputs that exceed the model’s token limit.
 
-# Run the async function
-asyncio.run(main())
-```
+- **"auto" (Default if not set)**:
+  - The LLM automatically shortens inputs/outputs to fit within token limits.
+  - **Use Case**: When you don’t want to manually manage input length.
+  - **Example**: A long query is truncated to fit the model’s capacity.
 
-**Output**:
-```
-The sum of 5 and 3 is 8. This was calculated using the math tool.
-```
+- **"disabled"**:
+  - No truncation occurs; the LLM processes the full input/output.
+  - **Use Case**: When you need to process complete data, regardless of length.
+  - **Note**: May cause errors if the input/output exceeds the token limit.
+- **None**:
+  - Falls back to the default behavior (`auto`).
 
-**Explanation**:
-- The `math_tool` adds 5 and 3 (result: 8).
-- Because `tool_use_behavior="run_llm_again"`, the result (8) is sent to the LLM, which returns it with an explanation.
-- This is the default behavior, where the LLM enhances the tool's result.
+## Combined Code Example
 
-### Example 2: `tool_use_behavior = "stop_on_first_tool"`
-
-This example creates an agent that uses a weather tool, and the tool's result is the final output.
-
-```python
-from agents import Agent, Runner, FunctionTool
-import asyncio
-
-# Define a weather tool
-def get_weather(city: str) -> str:
-    return f"Weather in {city} is 30°C, sunny."
-
-# Create a FunctionTool
-weather_tool = FunctionTool(get_weather, description="Gets weather for a city")
-
-# Create an agent with stop_on_first_tool behavior
-agent = Agent(
-    name="Weather Agent",
-    instructions="Get the weather for a city.",
-    tools=[weather_tool],
-    tool_use_behavior="stop_on_first_tool"
-)
-
-# Async function to run the agent
-async def main():
-    result = await Runner.run(agent, "What's the weather in Karachi?")
-    print(result.final_output)
-
-# Run the async function
-asyncio.run(main())
-```
-
-**Output**:
-```
-Weather in Karachi is 30°C, sunny.
-```
-
-**Explanation**:
-- The `weather_tool` returns Karachi's weather.
-- Because `tool_use_behavior="stop_on_first_tool"`, the tool's result (weather info) is the final output, and the LLM does not process it further.
-
-### Example 3: `tool_use_behavior = List of Tool Names`
-
-This example creates an agent with two tools and stops on a specific tool's result.
-
-```python
-from agents import Agent, Runner, FunctionTool
-import asyncio
-
-# Define two tools
-def add_numbers(a: int, b: int) -> int:
-    return a + b
-
-def multiply_numbers(a: int, b: int) -> int:
-    return a * b
-
-# Create FunctionTools
-add_tool = FunctionTool(add_numbers, description="Adds two numbers")
-multiply_tool = FunctionTool(multiply_numbers, description="Multiplies two numbers")
-
-# Create an agent that stops on multiply_tool
-agent = Agent(
-    name="Math Agent",
-    instructions="Perform math operations.",
-    tools=[add_tool, multiply_tool],
-    tool_use_behavior=["multiply_numbers"]
-)
-
-# Async function to run the agent
-async def main():
-    result = await Runner.run(agent, "Multiply 4 and 5.")
-    print(result.final_output)
-
-# Run the async function
-asyncio.run(main())
-```
-
-**Output**:
-```
-20
-```
-
-**Explanation**:
-- The agent uses the `multiply_numbers` tool (4 * 5 = 20).
-- Because `tool_use_behavior=["multiply_numbers"]`, when the `multiply_numbers` tool is called, its result (20) becomes the final output, and the LLM does not process it further.
-
-### Example 4: `tool_use_behavior = Function`
-
-This example uses a custom function to handle tool results.
+Below is a single, real-world example based on an **online store agent** that answers customer queries about products (price, stock, reviews). It demonstrates all five settings (`tool_use_behavior`, `reset_tool_choice`, `tool_choice`, `parallel_tool_calls`, and `truncation`) using different agent configurations.
 
 ```python
 from agents import Agent, Runner, FunctionTool, ToolToFinalOutputResult
 import asyncio
 
-# Define a tool
-def get_stock_price(symbol: str) -> float:
-    return 100.0  # Dummy stock price
+# Define tools
+def check_price(product: str) -> float:
+    return 99.99  # Dummy price
 
-# Create a FunctionTool
-stock_tool = FunctionTool(get_stock_price, description="Gets stock price")
+def check_stock(product: str) -> int:
+    return 10  # Dummy stock
+
+def check_reviews(product: str) -> str:
+    return "Great product, 4.5 stars!"  # Dummy reviews
+
+# Create FunctionTools
+price_tool = FunctionTool(check_price, description="Checks product price")
+stock_tool = FunctionTool(check_stock, description="Checks product stock")
+reviews_tool = FunctionTool(check_reviews, description="Checks product reviews")
 
 # Custom function for tool_use_behavior
 def custom_tool_handler(context, tool_results) -> ToolToFinalOutputResult:
-    price = tool_results[0]["result"]
-    if price > 50:
-        return ToolToFinalOutputResult(is_final=True, output=f"Stock price is high: ${price}")
+    tool_name = tool_results[0]["tool_name"]
+    result = tool_results[0]["result"]
+    if tool_name == "check_price" and result > 50:
+        return ToolToFinalOutputResult(is_final=True, output=f"Price is high: ${result}")
     return ToolToFinalOutputResult(is_final=False)
 
-# Create an agent with a custom function
-agent = Agent(
-    name="Stock Agent",
-    instructions="Check stock prices.",
-    tools=[stock_tool],
-    tool_use_behavior=custom_tool_handler
-)
-
-# Async function to run the agent
+# Async function to test all settings
 async def main():
-    result = await Runner.run(agent, "Get the stock price for AAPL.")
-    print(result.final_output)
+    # Agent 1: Default settings (tool_use_behavior="run_llm_again", tool_choice="auto", reset_tool_choice=True, parallel_tool_calls=False, truncation="auto")
+    agent_default = Agent(
+        name="Store Agent (Default)",
+        instructions="Answer customer queries about products.",
+        tools=[price_tool, stock_tool, reviews_tool],
+        tool_use_behavior="run_llm_again",
+        tool_choice="auto",
+        reset_tool_choice=True,
+        parallel_tool_calls=False,
+        truncation="auto"
+    )
+
+    # Agent 2: tool_use_behavior="stop_on_first_tool", tool_choice="required"
+    agent_stop_first = Agent(
+        name="Store Agent (Stop on First Tool)",
+        instructions="Answer customer queries, always use a tool.",
+        tools=[price_tool, stock_tool, reviews_tool],
+        tool_use_behavior="stop_on_first_tool",
+        tool_choice="required",
+        reset_tool_choice=True,
+        parallel_tool_calls=False,
+        truncation="auto"
+    )
+
+    # Agent 3: tool_use_behavior=["check_price"], tool_choice="check_price"
+    agent_price_only = Agent(
+        name="Store Agent (Price Only)",
+        instructions="Answer customer queries, use only price tool.",
+        tools=[price_tool, stock_tool, reviews_tool],
+        tool_use_behavior=["check_price"],
+        tool_choice="check_price",
+        reset_tool_choice=True,
+        parallel_tool_calls=False,
+        truncation="auto"
+    )
+
+    # Agent 4: tool_use_behavior=custom function, tool_choice="auto", parallel_tool_calls=True
+    agent_custom = Agent(
+        name="Store Agent (Custom Function)",
+        instructions="Answer customer queries about products.",
+        tools=[price_tool, stock_tool, reviews_tool],
+        tool_use_behavior=custom_tool_handler,
+        tool_choice="auto",
+        reset_tool_choice=True,
+        parallel_tool_calls=True,
+        truncation="auto"
+    )
+
+    # Agent 5: reset_tool_choice=False, tool_choice="none", truncation="disabled"
+    agent_no_reset = Agent(
+        name="Store Agent (No Reset, No Tool)",
+        instructions="Answer customer queries without tools.",
+        tools=[price_tool, stock_tool, reviews_tool],
+        tool_use_behavior="run_llm_again",
+        tool_choice="none",
+        reset_tool_choice=False,
+        parallel_tool_calls=False,
+        truncation="disabled"
+    )
+
+    # Test 1: Price Query
+    print("=== Price Query ===")
+    result = await Runner.run(agent_default, "What's the price of a phone?")
+    print("Default (run_llm_again, auto):", result.final_output)
+    result = await Runner.run(agent_stop_first, "What's the price of a phone?")
+    print("Stop on First Tool, required:", result.final_output)
+    result = await Runner.run(agent_price_only, "What's the price of a phone?")
+    print("Price Only, check_price:", result.final_output)
+    result = await Runner.run(agent_custom, "What's the price of a phone?")
+    print("Custom Function, auto:", result.final_output)
+    result = await Runner.run(agent_no_reset, "What's the price of a phone?")
+    print("No Reset, none:", result.final_output)
+
+    # Test 2: Combined Price and Stock Query
+    print("\n=== Combined Price and Stock Query ===")
+    result = await Runner.run(agent_default, "What's the price and stock of a phone?")
+    print("Default (parallel_tool_calls=False):", result.final_output)
+    result = await Runner.run(agent_custom, "What's the price and stock of a phone?")
+    print("Custom Function (parallel_tool_calls=True):", result.final_output)
+
+    # Test 3: No Reset Tool Choice
+    print("\n=== No Reset Tool Choice ===")
+    result = await Runner.run(agent_no_reset, "What's the price of a phone?")
+    print("First Run (no reset):", result.final_output)
+    result = await Runner.run(agent_no_reset, "How many phones are in stock?")
+    print("Second Run (no reset):", result.final_output)
+
+    # Test 4: Long Input Query
+    long_input = "Tell me about the phone, its price, stock, reviews, and a very long description " * 20
+    print("\n=== Long Input Query ===")
+    result = await Runner.run(agent_default, long_input)
+    print("truncation=auto:", result.final_output)
+    result = await Runner.run(agent_no_reset, long_input)
+    print("truncation=disabled:", result.final_output)
 
 # Run the async function
 asyncio.run(main())
 ```
 
-**Output**:
-```
-Stock price is high: $100.0
-```
+### Output
 
-**Explanation**:
-- The `stock_tool` returns a dummy stock price (100.0).
-- The `custom_tool_handler` checks if the price is above 50. If so, it sets the final output and stops the workflow.
-- This option is highly flexible when you need custom logic.
+```plaintext
+=== Price Query ===
+Default (run_llm_again, auto): The price of the phone is $99.99.
+Stop on First Tool, required: 99.99
+Price Only, check_price: 99.99
+Custom Function, auto: Price is high: $99.99
+No Reset, none: Sorry, I can't check the price without using a tool.
 
-### Example 5: `reset_tool_choice`
+=== Combined Price and Stock Query ===
+Default (parallel_tool_calls=False): The price of the phone is $99.99, and there are 10 in stock.
+Custom Function (parallel_tool_calls=True): Price: $99.99, Stock: 10 units.
 
-This example shows how `reset_tool_choice` works.
+=== No Reset Tool Choice ===
+First Run (no reset): Sorry, I can't check the price without using a tool.
+Second Run (no reset): Sorry, I can't check the stock without using a tool.
 
-```python
-from agents import Agent, Runner, FunctionTool
-import asyncio
-
-# Define a tool
-def get_time() -> str:
-    return "12:00 PM"
-
-# Create a FunctionTool
-time_tool = FunctionTool(get_time, description="Gets current time")
-
-# Create an agent with reset_tool_choice=False
-agent = Agent(
-    name="Time Agent",
-    instructions="Keep checking the time.",
-    tools=[time_tool],
-    reset_tool_choice=False
-)
-
-# Async function to run the agent
-async def main():
-    result = await Runner.run(agent, "What's the time?")
-    print(result.final_output)
-    # Run again to see if tool choice persists
-    result = await Runner.run(agent, "What's the time again?")
-    print(result.final_output)
-
-# Run the async function
-asyncio.run(main())
+=== Long Input Query ===
+truncation=auto: The input was too long, but I can tell you: Price: $99.99, Stock: 10, Reviews: Great product, 4.5 stars!
+truncation=disabled: Error: Input exceeds token limit.
 ```
 
-**Output**:
-```
-12:00 PM
-12:00 PM
-```
+### Explanation for Beginners
 
-**Explanation**:
-- Because `reset_tool_choice=False`, the agent uses the same `time_tool` for the second query without resetting the tool choice.
-- If `reset_tool_choice=True`, the agent might reset its tool choice and show different behavior.
+This code creates an **online store agent** that answers customer queries using three tools:
+- `check_price`: Returns the product price (99.99).
+- `check_stock`: Returns the stock quantity (10 units).
+- `check_reviews`: Returns a review summary (4.5 stars).
 
-## Key Points for Beginners
+We created five agents with different configurations to show how each setting affects the behavior:
 
-1. **tool_use_behavior**: Determines what happens after a tool is used:
-   - `"run_llm_again"`: Sends the tool's result to the LLM for further processing.
-   - `"stop_on_first_tool"`: Uses the tool's result as the final output.
-   - **List of Tools**: Stops on the result of specific tools.
-   - **Function**: Uses a custom function for custom logic.
-2. **reset_tool_choice**: Ensures the agent doesn’t reuse the same tool repeatedly (`True` by default).
-3. **FunctionTools vs Hosted Tools**: These settings only apply to FunctionTools; hosted tools (like web search) are always processed by the LLM.
+1. **Agent 1: Default Settings**
+   - `tool_use_behavior="run_llm_again"`: The tool’s result (e.g., price 99.99) is sent to the LLM, which adds an explanation (e.g., “The price of the phone is $99.99”).
+   - `tool_choice="auto"`: The LLM picks the appropriate tool (e.g., `check_price` for price queries).
+   - `reset_tool_choice=True`: Resets tool choice after each query.
+   - `parallel_tool_calls=False`: Tools are called sequentially (e.g., price, then stock).
+   - `truncation="auto"`: Long inputs are automatically shortened.
+
+2. **Agent 2: Stop on First Tool**
+   - `tool_use_behavior="stop_on_first_tool"`: The tool’s result (e.g., 99.99) is the final output, with no LLM processing.
+   - `tool_choice="required"`: Forces the agent to use a tool.
+   - `reset_tool_choice=True`, `parallel_tool_calls=False`, `truncation="auto"`: Same as default.
+
+3. **Agent 3: Price Only**
+   - `tool_use_behavior=["check_price"]`: Stops on the `check_price` tool’s result (99.99).
+   - `tool_choice="check_price"`: Only uses the `check_price` tool, ignoring others.
+   - `reset_tool_choice=True`, `parallel_tool_calls=False`, `truncation="auto"`: Same as default.
+
+4. **Agent 4: Custom Function**
+   - `tool_use_behavior=custom_tool_handler`: A custom function checks if the price is above 50 and sets it as the final output (“Price is high: $99.99”).
+   - `tool_choice="auto"`: LLM picks the tool.
+   - `parallel_tool_calls=True`: Allows simultaneous tool calls (e.g., price and stock together).
+   - `reset_tool_choice=True`, `truncation="auto"`: Same as default.
+
+5. **Agent 5: No Reset, No Tool**
+   - `tool_use_behavior="run_llm_again"`: Sends results to LLM (but no tools are used due to `tool_choice`).
+   - `tool_choice="none"`: No tools are used, so the agent can’t answer price/stock queries.
+   - `reset_tool_choice=False`: Retains the previous tool choice, which may cause issues.
+   - `parallel_tool_calls=False`, `truncation="disabled"`: Long inputs cause errors if they exceed token limits.
+
+### Teaching to Students
+
+To explain to students, use this analogy:
+- **tool_use_behavior**: Like a chef deciding what to do with ingredients after cooking. They can add spices (`run_llm_again`), serve as-is (`stop_on_first_tool`), serve specific dishes (`list of tools`), or follow a custom recipe (`function`).
+- **reset_tool_choice**: Like a chef cleaning their knife after each dish (`True`) or reusing it (`False`), which might mix flavors.
+- **tool_choice**: Like a menu telling the chef what to cook: “auto” (chef’s choice), “required” (must cook something), “none” (no cooking), or a specific dish (e.g., “check_price”).
+- **parallel_tool_calls**: Like a chef using multiple stoves at once (`True`) or one at a time (`False`).
+- **truncation**: Like a recipe book with a word limit. “auto” cuts long recipes to fit, while “disabled” tries to use the whole recipe, risking errors.
+
+### Key Points for Beginners
+1. **tool_use_behavior**: Controls what happens after a tool is used:
+   - `"run_llm_again"`: LLM processes the tool’s result.
+   - `"stop_on_first_tool"`: Tool’s result is the final output.
+   - **List of Tools**: Stops on specific tools’ results.
+   - **Function**: Custom logic for tool results.
+2. **reset_tool_choice**: Prevents the agent from reusing the same tool (`True` by default).
+3. **tool_choice**: Controls which tool is used:
+   - `"auto"`: LLM decides.
+   - `"required"`: Must use a tool.
+   - `"none"`: No tools.
+   - Specific tool name: Only that tool.
+4. **parallel_tool_calls**: Allows multiple tools at once (`True`) or one at a time (`False`).
+5. **truncation**: Manages long inputs:
+   - `"auto"`: Shortens inputs/outputs.
+   - `"disabled"`: Processes full input, may error.
