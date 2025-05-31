@@ -1,0 +1,30 @@
+Hello!
+Starting tomorrow, I will launch a new educational series called "OpenAI SDK: Deep Study". The goal of this series is to help beginners deeply understand the OpenAI Agents SDK so they can confidently attempt a complex quiz that I plan to hold after Eid.
+
+In this series, I will share useful documentation links, and I would like you to:
+
+Carefully read the provided OpenAI SDK documentation.
+
+Translate and explain it clearly in Roman Urdu, using real-time code examples that are beginner-friendly.
+
+Ensure the explanations are simple and understandable, especially for those new to the SDK.
+
+After the explanation, please create a quiz based on the material you explained.
+
+Quiz Requirements:
+Create 20 multiple-choice MCQ.
+
+The quiz should be in English.
+
+The quiz should be at a graduate level (not beginner level).
+
+At the end, provide the correct answers for all questions.
+
+Here’s the first URL to begin with:
+🔗https://openai.github.io/openai-agents-python/results/
+
+Please describe the content in Urdu with examples, and then create the quiz as described above.
+
+
+Read all Content and Deliver Each and every thing they are write in Doc And According to doc Give me Code Example.
+
