@@ -71,3 +71,23 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+
+# In this i combine the above two code snippets to show how to handle both raw response events and tool call events in a single run.
+    print("=== Run starting ===")
+    async for event in result.stream_events():
+        # Raw response events ko ab handle karte hain
+        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+            print(f"-- Raw text delta: {event.data.delta}")
+        # Baqi events pehle ki tarah
+        elif event.type == "agent_updated_stream_event":
+            print(f"Agent updated: {event.new_agent.name}")
+        elif event.type == "run_item_stream_event":
+            if event.item.type == "tool_call_item":
+                print("-- Tool was called")
+            elif event.item.type == "tool_call_output_item":
+                print(f"-- Tool output: {event.item.output}")
+            elif event.item.type == "message_output_item":
+                print(f"-- Message output:\n {ItemHelpers.text_message_output(event.item)}")
+    print("=== Run complete ===")

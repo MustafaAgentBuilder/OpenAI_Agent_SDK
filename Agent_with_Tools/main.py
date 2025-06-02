@@ -35,7 +35,7 @@ def read_file(ctx: RunContextWrapper[Any], path: str, directory: str | None = No
 
 agent = Agent(
     name="Assistant",
-    tools=[fetch_weather, read_file],  
+    tools=[fetch_weather, read_file],
 )
 
 for tool in agent.tools:

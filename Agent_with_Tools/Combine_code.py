@@ -1,4 +1,4 @@
-from agents import Agent, Runner, FunctionTool, ToolToFinalOutputResult
+from agent import Agent, Runner, FunctionTool, ToolToFinalOutputResult
 import asyncio
 
 # Tool 1: Check Price
