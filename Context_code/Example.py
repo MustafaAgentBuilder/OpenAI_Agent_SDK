@@ -10,7 +10,7 @@ class Purchase:
     item: str
     price: float
 
-# Define the Context class
+# Define the Context classj
 @dataclass
 class UserContext:
     uid: str
