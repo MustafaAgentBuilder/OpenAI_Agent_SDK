@@ -115,6 +115,7 @@ Input Guardrail Results: {'is_valid': True, 'reasoning': 'This is a geography qu
 Output Guardrail Results: {'is_valid': True}
 Raw Responses: [<ModelResponse object>]
 Last Agent: CapitalToolAgent
+
 To Input List: ['What is the capital of Brazil?', <HandoffOutputItem>, <ToolCallItem>, <ToolCallOutputItem>, <ReasoningItem>]
 
 HandoffOutputItem Detected:
