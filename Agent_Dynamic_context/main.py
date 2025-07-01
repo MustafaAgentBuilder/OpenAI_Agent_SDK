@@ -17,6 +17,12 @@ class UserDynamic:
     user_name: str
     user_email: str
 
+
+def my_tool(wrapper: RunContextWrapper, input: str):
+    print("Total tokens used so far:", wrapper.usage.total_tokens)
+
+
+
 def dynamic_instructions(
     context: RunContextWrapper[UserDynamic],
     dy_agent: Agent[UserDynamic], # Note: dy_agent parameter is currently unused in this function

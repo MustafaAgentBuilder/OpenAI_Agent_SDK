@@ -49,6 +49,13 @@ class UserInfo(BaseModel):
 user = UserInfo(name="John", age=30, city="New York")
 
 
+
+def my_tool(wrapper: RunContextWrapper, input: str):
+    print("Total tokens used so far:", wrapper.usage.total_tokens)
+
+
+
+
 # 3. Write with  async 
 async def dynamic_input(
     input_str: str,
