@@ -18,6 +18,13 @@ class UserInfo:
     interests: list
     preferences: dict
 
+
+def my_tool(wrapper: RunContextWrapper, input: str):
+    print("Total tokens used so far:", wrapper.usage.total_tokens)
+
+
+
+
 # 2) Expose the context‐reader as a tool
 @function_tool
 async def get_user_info(wrapper: RunContextWrapper[UserInfo]) -> str:
