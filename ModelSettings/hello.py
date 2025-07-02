@@ -27,17 +27,18 @@ def add(a: int, b: int) -> int:
 
 
 
+
 # In this code not comment setting are all run with Gemini or all Run with OpenAI
 
 agent = Agent(
-    name="Calculator",
-    instructions="Use the add tool to perform addition.",
+    name="Assistant",
+    instructions="You are a helpful assistant ",
     model=model,
     model_settings=ModelSettings(
-        temperature=0.0,
-        top_p=1.0,
-        # frequency_penalty=0.0,
-        presence_penalty=0.0,
+        temperature=0.5,
+        top_p=0.9,
+        frequency_penalty=0.5,
+        presence_penalty=0.0, 
         tool_choice="auto",
         # parallel_tool_calls=True,
         truncation="auto",
@@ -50,10 +51,10 @@ agent = Agent(
     tools=[add],
 )
 
-result = Runner.run_sync(agent, "What is 12 + 30?")
+result = Runner.run_sync(agent,"write me a Story on Thirsty crow")
 # print("Answer:", result.final_output)
-print("Result:")
-pprint(asdict(result))
+print("Result:",result)
+# pprint(asdict(result))
 
 
 # pprint(asdict(result))
