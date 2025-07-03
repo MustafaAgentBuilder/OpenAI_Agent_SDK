@@ -1,5 +1,31 @@
-from agent import Agent, Runner, FunctionTool, ToolToFinalOutputResult
+from agents import Agent, Runner, FunctionTool,ToolsToFinalOutputResult, set_tracing_disabled ,OpenAIChatCompletionsModel
 import asyncio
+from openai import AsyncOpenAI
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
+# Disable extra tracing/logging for cleaner output
+set_tracing_disabled(True)
+
+# This code is written by me to use this open-source SDK
+
+# Create an API provider with AsyncOpenAI using your API key and base URL.
+Provider = AsyncOpenAI(
+    api_key=os.getenv("GEMINI_API_KEY"),
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+)
+
+# Set up the chat completion model with the API provider.
+model = OpenAIChatCompletionsModel(
+    model="gemini-2.0-flash-exp",
+    openai_client=Provider,
+)
+
+
+
+
+
 
 # Tool 1: Check Price
 def check_price(product: str) -> float:
@@ -19,12 +45,12 @@ stock_tool = FunctionTool(check_stock, description="Checks product stock")
 reviews_tool = FunctionTool(check_reviews, description="Checks product reviews")
 
 # Custom function for tool_use_behavior
-def custom_tool_handler(context, tool_results) -> ToolToFinalOutputResult:
+def custom_tool_handler(context, tool_results) -> ToolsToFinalOutputResult:
     tool_name = tool_results[0]["tool_name"]
     result = tool_results[0]["result"]
     if tool_name == "check_price" and result > 50:
-        return ToolToFinalOutputResult(is_final=True, output=f"Price is high: ${result}")
-    return ToolToFinalOutputResult(is_final=False)
+        return ToolsToFinalOutputResult(is_final=True, output=f"Price is high: ${result}")
+    return ToolsToFinalOutputResult(is_final=False)
 
 # Async function to test different tool_use_behavior options
 async def main():
