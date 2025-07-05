@@ -22,7 +22,7 @@ guardrail_agent = Agent(
 )
 
 # Guardrail function
-@input_guardrail
+@input_guardrail(name="Hi")
 async def math_homework_guardrail(ctx, agent, input_data):
     result = await Runner.run(guardrail_agent, input_data, context=ctx.context)
     final_output = result.final_output
