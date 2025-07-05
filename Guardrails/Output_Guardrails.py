@@ -32,7 +32,7 @@ main_agent = Agent(
     name="Response Agent",
     instructions="Respond to user queries.",
     output_type=MessageOutput,
-    output_guardrails=[OutputGuardrail(guardrail_function=math_output_guardrail)]
+    output_guardrails=[OutputGuardrail(guardrail_function=math_output_guardrail,name="Agent")]
 )
 
 # Main function
